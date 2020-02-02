@@ -16,7 +16,7 @@
 
   <form action="genpass.php" method="post">
     <label>用户名</label>
-    <input type="text" name="username" value="liyi1472">
+    <input type="text" name="username" value="">
     <br>
     <label>令　牌</label>
     <input type="password" name="token" value="">
@@ -42,7 +42,7 @@
 
   <form action="getpass.php" method="post">
     <label>用户名</label>
-    <input type="text" name="username" value="liyi1472">
+    <input type="text" name="username" value="">
     <br>
     <label>令　牌</label>
     <input type="password" name="token" value="">
