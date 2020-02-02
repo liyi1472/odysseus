@@ -6,5 +6,6 @@ CREATE TABLE IF NOT EXISTS `odyssey` (
   `password` varchar(100) NOT NULL,
   `password_hash` varchar(100) NOT NULL,
   `expiration_date` datetime NOT NULL,
+  `expiration_date_hash` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

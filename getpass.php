@@ -24,6 +24,9 @@
         die('CONFIG.JSON NOT FOUND');
       }
       $config = json_decode($config, true);
+      if (!($config['DB_HOST'] && $config['DB_USER'] && $config['DB_PASS'] && $config['DB_NAME'])) {
+        die('CONFIG.JSON NOT VALID');
+      }
       $db = mysqli_connect($config['DB_HOST'], $config['DB_USER'], $config['DB_PASS'], $config['DB_NAME']);
       if (mysqli_connect_errno()) {
         die(mysqli_connect_error());
@@ -32,43 +35,51 @@
       $username = $_POST['username'];
       $token = $_POST['token'];
 
-      $selectSQL = 'SELECT token, expiration_date, password, password_hash FROM odyssey WHERE username = "'.$username.'" AND expiration_date > NOW();';
+      $selectSQL = 'SELECT expiration_date, token FROM odyssey WHERE username = "'.$username.'" AND expiration_date > NOW();';
       $result = $db->query($selectSQL);
       $row = $result->fetch_assoc();
       if (isset($row['expiration_date'])) {
         $result->free();
         $db->close();
+        if ($row['token'] != $token) {
+          echo('WRONG TOKEN');
+          return false;
+        }
         echo($row['expiration_date']);
         return false;
       }
 
-      $selectSQL = 'SELECT token FROM odyssey WHERE username = "'.$username.'";';
+      $selectSQL = 'SELECT token, password, password_hash, expiration_date, expiration_date_hash FROM odyssey WHERE username = "'.$username.'";';
       $result = $db->query($selectSQL);
       $row = $result->fetch_assoc();
-      if (isset($row['token']) && $row['token'] != $token) {
-        echo('WRONG TOKEN');
+      if (isset($row['token'])) {
+        if ($row['token'] != $token) {
+          echo('WRONG TOKEN');
+          $result->free();
+          $db->close();
+          return false;
+        } elseif (!password_verify($row['expiration_date'], $row['expiration_date_hash'])) {
+          echo('WRONG EXPIRATION DATE');
+          $result->free();
+          $db->close();
+          return false;
+        }
+        $rows = $result->fetch_all(MYSQLI_ASSOC);
+        foreach ($rows as $row) {
+          $password = $row['password'];
+          if (password_verify($password, $row['password_hash'])) {
+            echo($password);
+            break;
+          }
+        }
         $result->free();
         $db->close();
-        return false;
+        return true;
+      } else {
+        header('Location:index.php');
       }
-
-      $selectSQL = 'SELECT password, password_hash FROM odyssey WHERE username = "'.$username.'";';
-      $result = $db->query($selectSQL);
-      $rows = $result->fetch_all(MYSQLI_ASSOC);
-      foreach ($rows as $row) {
-        $password = $row['password'];
-        if (password_verify($password, $row['password_hash'])) {
-          echo($password);
-          break;
-        }
-      }
-
-      $result->free();
-      $db->close();
-      return true;
-
     } else {
-      header('Location:index.html');
+      header('Location:index.php');
     }
 
   ?>

@@ -36,6 +36,9 @@
         die('CONFIG.JSON NOT FOUND');
       }
       $config = json_decode($config, true);
+      if (!($config['DB_HOST'] && $config['DB_USER'] && $config['DB_PASS'] && $config['DB_NAME'])) {
+        die('CONFIG.JSON NOT VALID');
+      }
       $db = mysqli_connect($config['DB_HOST'], $config['DB_USER'], $config['DB_PASS'], $config['DB_NAME']);
       if (mysqli_connect_errno()) {
         die(mysqli_connect_error());
@@ -44,23 +47,17 @@
       $username = $_POST['username'];
       $token = $_POST['token'];
 
-      $selectSQL = 'SELECT expiration_date FROM odyssey WHERE username = "'.$username.'" AND expiration_date > NOW();';
+      $selectSQL = 'SELECT expiration_date, token FROM odyssey WHERE username = "'.$username.'" AND expiration_date > NOW();';
       $result = $db->query($selectSQL);
       $row = $result->fetch_assoc();
       if (isset($row['expiration_date'])) {
+        $result->free();
+        $db->close();
+        if ($row['token'] != $token) {
+          echo('WRONG TOKEN');
+          return false;
+        }
         echo($row['expiration_date']);
-        $result->free();
-        $db->close();
-        return false;
-      }
-
-      $selectSQL = 'SELECT token FROM odyssey WHERE username = "'.$username.'";';
-      $result = $db->query($selectSQL);
-      $row = $result->fetch_assoc();
-      if (isset($row['token']) && $row['token'] != $token) {
-        echo('WRONG TOKEN');
-        $result->free();
-        $db->close();
         return false;
       }
 
@@ -74,19 +71,22 @@
       if (isset($_POST['period']) && is_numeric($_POST['period'])) {
         $period = $_POST['period'];
       }
-      $expirationDate = date('Y-m-d H:i:s', strtotime('+ '.$period.' hours'));
+      // $expirationDate = date('Y-m-d H:i:s', strtotime('+ '.$period.' hours'));
+      $expirationDate = date('Y-m-d H:i:s', strtotime('+ '.$period.' seconds'));
+      $expirationDateHash = password_hash($expirationDate, PASSWORD_BCRYPT);
 
-      $data = ["('{$username}', '{$token}', '{$password}', '{$passHash}', '{$expirationDate}')"];
-      $count = 0;
-      while ($count < 99) {
+      $data = ["('{$username}', '{$token}', '{$password}', '{$passHash}', '{$expirationDate}','{$expirationDateHash}')"];
+      $count = 1;
+      while ($count < 50) {
         $newPass = genPass(8);
         if (!in_array($newPass, $data)) {
-          $data[] = "('{$username}', '{$token}', '{$newPass}', '{$passHash}', '{$expirationDate}')";
+          $data[] = "('{$username}', '{$token}', '{$newPass}', '{$passHash}', '{$expirationDate}','{$expirationDateHash}')";
           $count++;
         }
       }
+      shuffle($data);
 
-      $insertSQL = 'INSERT INTO odyssey (username, token, password, password_hash, expiration_date) VALUES '.join(', ', $data).';';
+      $insertSQL = 'INSERT INTO odyssey (username, token, password, password_hash, expiration_date, expiration_date_hash) VALUES '.join(', ', $data).';';
       mysqli_query($db, $insertSQL);
 
       echo($password);
@@ -96,7 +96,7 @@
       return true;
 
     } else {
-      header('Location:index.html');
+      header('Location:index.php');
     }
 
   ?>
