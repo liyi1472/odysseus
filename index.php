@@ -35,6 +35,19 @@
       <option value="120">120小时</option>
     </select>
     <br>
+    <label>次晨后</label>
+    <input type="checkbox" name="nextMorning">
+    <small>
+    <?php
+      $expirationDate = date('Y年m月d日', strtotime('+1 day'));
+      if (date('Hi') < '0730') {
+        $expirationDate = date('Y年m月d日');
+      }
+      $days = ['', '月', '火', '水', '木', '金', '土', '日'];
+      echo($expirationDate.' ('.$days[date('N')].') 07:30');
+    ?>
+    </small>
+    <br>
     <button type="submit" class="btn btn-primary btn-sm">生成密码</button>
   </form>
 

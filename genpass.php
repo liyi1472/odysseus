@@ -67,12 +67,13 @@
       $password = genPass(8);
       $passHash = password_hash($password, PASSWORD_BCRYPT);
 
-      $period = 4;
-      if (isset($_POST['period']) && is_numeric($_POST['period'])) {
-        $period = $_POST['period'];
+      $expirationDate = date('Y-m-d 07:30:00', strtotime('+1 day'));
+      if (date('Hi') < '0730') {
+        $expirationDate = date('Y-m-d 07:30:00');
       }
-      // $expirationDate = date('Y-m-d H:i:s', strtotime('+ '.$period.' hours'));
-      $expirationDate = date('Y-m-d H:i:s', strtotime('+ '.$period.' seconds'));
+      if (isset($_POST['period']) && is_numeric($_POST['period'])) {
+        $expirationDate = date('Y-m-d H:i:s', strtotime('+'.$_POST['period'].' hours'));
+      }
       $expirationDateHash = password_hash($expirationDate, PASSWORD_BCRYPT);
 
       $data = ["('{$username}', '{$token}', '{$password}', '{$passHash}', '{$expirationDate}','{$expirationDateHash}')"];
