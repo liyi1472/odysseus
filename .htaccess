@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^config.json$ - [NC,F,L]
+RewriteRule ^odysseus.sql$ - [NC,F,L]
