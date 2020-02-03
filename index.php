@@ -60,7 +60,7 @@
     <label>令　牌</label>
     <input type="password" name="token" value="">
     <br>
-    <button type="submit" class="btn btn-primary btn-sm">解锁密码</button>
+    <button type="submit" class="btn btn-success btn-sm">解锁密码</button>
   </form>
 
   <script src="js/jquery.min.js"></script>

@@ -9,4 +9,9 @@ $(function () {
   });
   $('input[name=nextMorning]').click();
 
+  $(window).on('load resize', function(){
+    $('body').show();
+    $('body').css('margin-top', ($(window).height() - $('body').outerHeight()) / 3);
+  });
+
 });

@@ -1,5 +1,25 @@
+html {
+  background-color: #4d3317;
+  background-image: url(../images/odysseus.jpg);
+  background-repeat: no-repeat;
+}
+
+@media screen and (min-width: 415px) {
+  html {
+    background-position: 50% -50%;
+  }
+}
+
 body {
-  margin: 10px;
+  border: 1px solid #ccc;
+  padding: 15px;
+  width: fit-content;
+  min-width: 300px;
+  display: none;
+  border-radius: 15px;
+  margin: 2px auto;
+  background: #efefef;
+  opacity: 0.9;
 }
 
 label {
@@ -32,4 +52,37 @@ button.btn {
 img.banner {
   padding: 10px 5px;
   width: 245px;
+}
+
+table.passwords {
+  max-width: 500px;
+  margin: 0px;
+}
+
+table.passwords>thead {
+  background-color: #343a40;
+  color: white;
+}
+
+div.primary, div.warning, div.danger {
+  text-align: center;
+  padding: 10px 25px;
+  border-radius: 18px;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+div.primary {
+  color: #fff;
+  background-color: #007bff;
+}
+
+div.warning {
+  color: #212529;
+  background-color: #ffc107;
+}
+
+div.danger {
+  color: #fff;
+  background-color: #dc3545;
 }

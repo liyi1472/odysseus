@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="css/master.css">
 </head>
 
-<body style="font-size: 50px;">
+<body>
   <?php
 
     // 生成密码
@@ -33,32 +33,69 @@
 
       $config = file_get_contents(__DIR__ . '/config.json');
       if ($config === false) {
+        echo('<div class="danger">');
         die('CONFIG.JSON NOT FOUND');
+        echo('</div>');
       }
       $config = json_decode($config, true);
       if (!($config['DB_HOST'] && $config['DB_USER'] && $config['DB_PASS'] && $config['DB_NAME'])) {
+        echo('<div class="danger">');
         die('CONFIG.JSON NOT VALID');
+        echo('</div>');
       }
       $db = mysqli_connect($config['DB_HOST'], $config['DB_USER'], $config['DB_PASS'], $config['DB_NAME']);
       if (mysqli_connect_errno()) {
+        echo('<div class="danger">');
         die(mysqli_connect_error());
+        echo('</div>');
       }
 
       $username = $_POST['username'];
       $token = $_POST['token'];
 
-      $selectSQL = 'SELECT expiration_date, token FROM odyssey WHERE username = "'.$username.'" AND expiration_date > NOW();';
+      $selectSQL = 'SELECT expiration_date FROM odyssey WHERE username = "'.$username.'" AND expiration_date > NOW();';
       $result = $db->query($selectSQL);
       $row = $result->fetch_assoc();
       if (isset($row['expiration_date'])) {
+        echo('<div class="warning">');
+        echo(date('Y年n月j日 H:i', strtotime($row['expiration_date'])));
+        echo('</div>');
         $result->free();
         $db->close();
+        return false;
+      }
+
+      $selectSQL = 'SELECT token, password, password_hash, expiration_date, expiration_date_hash FROM odyssey WHERE username = "'.$username.'";';
+      $result = $db->query($selectSQL);
+      $row = $result->fetch_assoc();
+      if (isset($row['token'])) {
         if ($row['token'] != $token) {
+          echo('<div class="danger">');
           echo('WRONG TOKEN');
+          echo('</div>');
+          $result->free();
+          $db->close();
+          return false;
+        } elseif (!password_verify($row['expiration_date'], $row['expiration_date_hash'])) {
+          echo('<div class="danger">');
+          echo('WRONG EXPIRATION DATE');
+          echo('</div>');
+          $result->free();
+          $db->close();
           return false;
         }
-        echo($row['expiration_date']);
-        return false;
+      }
+
+      $rows = $result->fetch_all(MYSQLI_ASSOC);
+      foreach ($rows as $row) {
+        $password = $row['password'];
+        $expirationDate = $row['expiration_date'];
+        if (password_verify($password, $row['password_hash'])) {
+          $data = ["('{$username}', '{$password}', '{$expirationDate}')"];
+          $insertSQL = 'INSERT INTO history (username, password, expiration_date) VALUES '.join(', ', $data).';';
+          mysqli_query($db, $insertSQL);
+          break;
+        }
       }
 
       $deleteSQL = 'DELETE FROM odyssey WHERE username = "'.$username.'";';
@@ -76,12 +113,12 @@
       }
       $expirationDateHash = password_hash($expirationDate, PASSWORD_BCRYPT);
 
-      $data = ["('{$username}', '{$token}', '{$password}', '{$passHash}', '{$expirationDate}','{$expirationDateHash}')"];
+      $data = ["('{$username}', '{$token}', '{$password}', '{$passHash}', '{$expirationDate}', '{$expirationDateHash}')"];
       $count = 1;
       while ($count < 50) {
         $newPass = genPass(8);
         if (!in_array($newPass, $data)) {
-          $data[] = "('{$username}', '{$token}', '{$newPass}', '{$passHash}', '{$expirationDate}','{$expirationDateHash}')";
+          $data[] = "('{$username}', '{$token}', '{$newPass}', '{$passHash}', '{$expirationDate}', '{$expirationDateHash}')";
           $count++;
         }
       }
@@ -90,7 +127,9 @@
       $insertSQL = 'INSERT INTO odyssey (username, token, password, password_hash, expiration_date, expiration_date_hash) VALUES '.join(', ', $data).';';
       mysqli_query($db, $insertSQL);
 
+      echo('<div class="primary">');
       echo($password);
+      echo('</div>');
 
       $result->free();
       $db->close();
