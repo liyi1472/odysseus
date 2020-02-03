@@ -9,9 +9,10 @@ $(function () {
   });
   $('input[name=nextMorning]').click();
 
-  $(window).on('load resize', function(){
-    $('body').show();
+  $(window).on('resize', function(){
     $('body').css('margin-top', ($(window).height() - $('body').outerHeight()) / 3);
   });
+  $('body').css('margin-top', ($(window).height() - $('body').outerHeight()) / 3);
+  $('body').show();
 
 });
