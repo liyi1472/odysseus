@@ -1,6 +1,6 @@
-$(function () {
+$(function() {
 
-  $('input[name=nextMorning]').on('change', function () {
+  $('input[name=nextMorning]').on('change', function() {
     if ($(this).prop('checked')) {
       $('select[name=period]').prop("disabled", true);
     } else {
@@ -9,10 +9,13 @@ $(function () {
   });
   $('input[name=nextMorning]').click();
 
-  $(window).on('resize', function(){
-    $('body').css('margin-top', ($(window).height() - $('body').outerHeight()) / 3);
+  $(window).on('resize', function() {
+    $('body').css('margin-top', ($(window).height() - $('body').outerHeight()) / 2.5);
+    $('html').css('background-position', '50% ' + ($(window).height() - $('body').outerHeight()) / 10 + 'px');
   });
-  $('body').css('margin-top', ($(window).height() - $('body').outerHeight()) / 3);
+  $('body').css('margin-top', ($(window).height() - $('body').outerHeight()) / 2.5);
+  $('html').css('background-position', '50% ' + ($(window).height() - $('body').outerHeight()) / 10 + 'px');
+
   $('body').show();
 
 });
