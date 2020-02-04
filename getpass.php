@@ -92,7 +92,7 @@
             }
           }
 
-          $selectSQL = 'SELECT password, expiration_date FROM history WHERE username = "'.$username.'" order by expiration_date desc limit 10;';
+          $selectSQL = 'SELECT password, expiration_date FROM history WHERE username = "'.$username.'" order by expiration_date desc limit 5;';
           $result = $db->query($selectSQL);
           $rows = $result->fetch_all(MYSQLI_ASSOC);
           $firstRowFlag = true;
