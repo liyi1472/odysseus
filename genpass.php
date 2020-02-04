@@ -34,21 +34,24 @@
 
         $config = file_get_contents(__DIR__ . '/config.json');
         if ($config === false) {
-          echo('<div class="danger">');
-          die('CONFIG.JSON NOT FOUND');
-          echo('</div>');
+          $contents = '<div class="danger">';
+          $contents .= 'CONFIG.JSON NOT FOUND';
+          $contents .= '</div>';
+          return $contents;
         }
         $config = json_decode($config, true);
         if (!($config['DB_HOST'] && $config['DB_USER'] && $config['DB_PASS'] && $config['DB_NAME'])) {
-          echo('<div class="danger">');
-          die('CONFIG.JSON NOT VALID');
-          echo('</div>');
+          $contents = '<div class="danger">';
+          $contents .= 'CONFIG.JSON NOT VALID';
+          $contents .= '</div>';
+          return $contents;
         }
         $db = mysqli_connect($config['DB_HOST'], $config['DB_USER'], $config['DB_PASS'], $config['DB_NAME']);
         if (mysqli_connect_errno()) {
-          echo('<div class="danger">');
-          die(mysqli_connect_error());
-          echo('</div>');
+          $contents = '<div class="danger">';
+          $contents .= mysqli_connect_error();
+          $contents .= '</div>';
+          return $contents;
         }
 
         $username = $_POST['username'];
@@ -58,12 +61,12 @@
         $result = $db->query($selectSQL);
         $row = $result->fetch_assoc();
         if (isset($row['expiration_date'])) {
-          echo('<div class="warning">');
-          echo(date('Y年n月j日 H:i', strtotime($row['expiration_date'])));
-          echo('</div>');
+          $contents = '<div class="warning">';
+          $contents .= date('Y年n月j日 H:i', strtotime($row['expiration_date']));
+          $contents .= '</div>';
           $result->free();
           $db->close();
-          return false;
+          return $contents;
         }
 
         $selectSQL = 'SELECT token, password, password_hash, expiration_date, expiration_date_hash FROM odyssey WHERE username = "'.$username.'";';
@@ -71,19 +74,19 @@
         $row = $result->fetch_assoc();
         if (isset($row['token'])) {
           if ($row['token'] != $token) {
-            echo('<div class="danger">');
-            echo('WRONG TOKEN');
-            echo('</div>');
+            $contents = '<div class="danger">';
+            $contents .= 'WRONG TOKEN';
+            $contents .= '</div>';
             $result->free();
             $db->close();
-            return false;
+            return $contents;
           } elseif (!password_verify($row['expiration_date'], $row['expiration_date_hash'])) {
-            echo('<div class="danger">');
-            echo('WRONG EXPIRATION DATE');
-            echo('</div>');
+            $contents = '<div class="danger">';
+            $contents .= 'WRONG EXPIRATION DATE';
+            $contents .= '</div>';
             $result->free();
             $db->close();
-            return false;
+            return $contents;
           }
         }
 
@@ -128,19 +131,21 @@
         $insertSQL = 'INSERT INTO odyssey (username, token, password, password_hash, expiration_date, expiration_date_hash) VALUES '.join(', ', $data).';';
         mysqli_query($db, $insertSQL);
 
-        echo('<div class="primary">');
-        echo($password);
-        echo('</div>');
+        $contents = '<div class="primary">';
+        $contents .= $password;
+        $contents .= '</div>';
 
         $result->free();
         $db->close();
-        return true;
+        return $contents;
 
       } else {
         header('Location:index.php');
       }
     }
-    main();
+
+    echo main();
+
   ?>
   <script src="js/jquery.min.js"></script>
   <script src="js/master.js"></script>

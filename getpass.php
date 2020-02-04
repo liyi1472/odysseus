@@ -22,21 +22,24 @@
 
         $config = file_get_contents(__DIR__ . '/config.json');
         if ($config === false) {
-          echo('<div class="danger">');
-          die('CONFIG.JSON NOT FOUND');
-          echo('</div>');
+          $contents = '<div class="danger">';
+          $contents .= 'CONFIG.JSON NOT FOUND';
+          $contents .= '</div>';
+          return $contents;
         }
         $config = json_decode($config, true);
         if (!($config['DB_HOST'] && $config['DB_USER'] && $config['DB_PASS'] && $config['DB_NAME'])) {
-          echo('<div class="danger">');
-          die('CONFIG.JSON NOT VALID');
-          echo('</div>');
+          $contents = '<div class="danger">';
+          $contents .= 'CONFIG.JSON NOT VALID';
+          $contents .= '</div>';
+          return $contents;
         }
         $db = mysqli_connect($config['DB_HOST'], $config['DB_USER'], $config['DB_PASS'], $config['DB_NAME']);
         if (mysqli_connect_errno()) {
-          echo('<div class="danger">');
-          die(mysqli_connect_error());
-          echo('</div>');
+          $contents = '<div class="danger">');
+          $contents .= mysqli_connect_error();
+          $contents .= '</div>';
+          return $contents;
         }
 
         $username = $_POST['username'];
@@ -46,12 +49,12 @@
         $result = $db->query($selectSQL);
         $row = $result->fetch_assoc();
         if (isset($row['expiration_date'])) {
-          echo('<div class="warning">');
-          echo(date('Y年n月j日 H:i', strtotime($row['expiration_date'])));
-          echo('</div>');
+          $contents = '<div class="warning">';
+          $contents .= date('Y年n月j日 H:i', strtotime($row['expiration_date']));
+          $contents .= '</div>';
           $result->free();
           $db->close();
-          return false;
+          return $contents;
         }
 
         $selectSQL = 'SELECT token, password, password_hash, expiration_date, expiration_date_hash FROM odyssey WHERE username = "'.$username.'";';
@@ -59,35 +62,35 @@
         $row = $result->fetch_assoc();
         if (isset($row['token'])) {
           if ($row['token'] != $token) {
-            echo('<div class="danger">');
-            echo('WRONG TOKEN');
-            echo('</div>');
+            $contents = '<div class="danger">';
+            $contents .= 'WRONG TOKEN';
+            $contents .= '</div>';
             $result->free();
             $db->close();
-            return false;
+            return $contents;
           } elseif (!password_verify($row['expiration_date'], $row['expiration_date_hash'])) {
-            echo('<div class="danger">');
-            echo('WRONG EXPIRATION DATE');
-            echo('</div>');
+            $contents = '<div class="danger">';
+            $contents .= 'WRONG EXPIRATION DATE';
+            $contents .= '</div>';
             $result->free();
             $db->close();
-            return false;
+            return $contents;
           }
 
-          echo('<table class="table table-bordered table-hover text-center table-light passwords">');
-          echo('<thead><tr><th>有效期限</th><th>密码原文</th></tr></thead>');
-          echo('<tbody>');
+          $contents = '<table class="table table-bordered table-hover text-center table-light passwords">';
+          $contents .= '<thead><tr><th>有效期限</th><th>密码原文</th></tr></thead>';
+          $contents .= '<tbody>';
 
           $rows = $result->fetch_all(MYSQLI_ASSOC);
           foreach ($rows as $row) {
             $password = $row['password'];
             $expirationDate = date('Y年n月j日 H:i', strtotime($row['expiration_date']));
             if (password_verify($password, $row['password_hash'])) {
-              echo('<tr class="table-primary"><td><b>');
-              echo($expirationDate);
-              echo('</b></td><td><b>');
-              echo($password);
-              echo('</b></td></tr>');
+              $contents .= '<tr class="table-primary"><td><b>';
+              $contents .= $expirationDate;
+              $contents .= '</b></td><td><b>';
+              $contents .= $password;
+              $contents .= '</b></td></tr>';
               break;
             }
           }
@@ -101,21 +104,22 @@
             $expirationDate = date('Y年n月j日 H:i', strtotime($row['expiration_date']));
             if ($firstRowFlag) {
               $firstRowFlag = false;
-              echo('<tr class="table-warning"><td>');
+              $contents .= '<tr class="table-warning"><td>';
             } else {
-              echo('<tr><td>');
+              $contents .= '<tr><td>';
             }
-            echo($expirationDate);
-            echo('</td><td>');
-            echo($password);
-            echo('</td></tr>');
+            $contents .= $expirationDate;
+            $contents .= '</td><td>';
+            $contents .= $password;
+            $contents .= '</td></tr>';
           }
 
-          echo('</tbody></table>');
+          $contents .= '</tbody></table>';
 
           $result->free();
           $db->close();
-          return true;
+          return $contents;
+
         } else {
           header('Location:index.php');
         }
@@ -123,7 +127,8 @@
         header('Location:index.php');
       }
     }
-    main();
+
+    echo main();
 
   ?>
   <script src="js/jquery.min.js"></script>
