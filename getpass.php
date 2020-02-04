@@ -36,7 +36,7 @@
         }
         $db = mysqli_connect($config['DB_HOST'], $config['DB_USER'], $config['DB_PASS'], $config['DB_NAME']);
         if (mysqli_connect_errno()) {
-          $contents = '<div class="danger">');
+          $contents = '<div class="danger">';
           $contents .= mysqli_connect_error();
           $contents .= '</div>';
           return $contents;
